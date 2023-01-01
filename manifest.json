@@ -1,0 +1,13 @@
+{
+    "name": "Hello, World!",
+    "version": "0.1",
+    "manifest_version": 3,
+    "author": "Jaedon Heger",
+    "background": {
+      "service_worker": "tabManager.js"
+    },
+    "action": {},
+    "permissions": [
+        "tabs"
+    ] 
+  }
