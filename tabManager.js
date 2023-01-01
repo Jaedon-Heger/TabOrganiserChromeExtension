@@ -1,20 +1,41 @@
-// todo move to settings to chrome extension settings
+// todo move to settings to chrome extension settings in #2
 const tabsInfo = [
     {
         "url": "https://mail.google.com/mail/u/1/#inbox",
-        "pinned": true,
-        "group": false
+        "pinned": true
     },
     {
         "url": "https://calendar.google.com/calendar/u/1/r",
+        "pinned": true
+    },
+    {
+        "url": "https://mail.google.com/mail/u/0/#inbox",
         "pinned": true,
-        "group": false
-    }
+        "group": 1
+    },
+    {
+        "url": "https://calendar.google.com/calendar/u/0/r",
+        "pinned": true,
+        "group": 2
+    },
+    {
+        "url": "chrome://extensions/",
+        "pinned": true,
+        "group": 2
+    },
 ];
+
+function getGroupMapFromEntries(groupEntries) {
+    // code from https://stackoverflow.com/questions/14446511/most-efficient-method-to-groupby-on-an-array-of-objects
+    return groupEntries.reduce((groupObect, groupInfo) => {
+        (groupObect[groupInfo.groupId] = groupObect[groupInfo.groupId] || []).push(groupInfo.tabId);
+        return groupObect;
+      }, {});
+}
 
 async function closeAllPinnedTabs() {
     const tabs = await chrome.tabs.query({pinned: true});
-    console.log(tabs);
+
     tabs.forEach(tab => {
         chrome.tabs.remove(tab.id);
     });
@@ -23,7 +44,8 @@ async function closeAllPinnedTabs() {
 chrome.runtime.onStartup.addListener(async () => {
     await closeAllPinnedTabs();
 
-    const tabIds = new Array();
+    const groupEntries = new Array();
+
     await Promise.all(tabsInfo.map(async (tabInfo, index) => {
         const tab = await chrome.tabs.create({ 
             index,
@@ -32,12 +54,18 @@ chrome.runtime.onStartup.addListener(async () => {
          });
 
          if(tabInfo.group) {
-            tabIds.push(tab.id)
+            groupEntries.push({
+                groupId: tabInfo.group,
+                tabId: tab.id
+            });
          }
     }));
-    
-    // todo add support for multiple groups
-    chrome.tabs.group({
-        tabIds: tabIds
+
+    const groupMap = getGroupMapFromEntries(groupEntries);
+
+    Object.values(groupMap).reverse().forEach(tabIds => {
+        chrome.tabs.group({
+            tabIds: tabIds
+        });
     });
   });
