@@ -6,8 +6,12 @@
     "background": {
       "service_worker": "tabManager.js"
     },
-    "action": {},
     "permissions": [
         "tabs"
-    ] 
+    ],
+    "action": {
+      "default_title": "Tab Manager Extension",
+      "default_icon": "favicon.png",
+      "default_popup": "index.html"
+    }
   }
